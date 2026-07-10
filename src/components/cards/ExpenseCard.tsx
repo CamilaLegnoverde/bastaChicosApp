@@ -7,6 +7,7 @@ import React from 'react';
 import { Expense, Friend, UserProfile } from '../../types';
 import { Calendar, Pencil } from 'lucide-react';
 import { formatFriendlyDate } from '../../utils/dates';
+import Avatar from '../ui/Avatar';
 
 interface ExpenseCardProps {
   key?: any;
@@ -27,16 +28,16 @@ export default function ExpenseCard({ expense, friendsList, currentUser, onEdit 
     return friend ? friend.name : 'Integrante';
   };
 
-  const getMemberInitials = (id: string) => {
-    if (id === currentUser.id) return currentUser.name.charAt(0).toUpperCase();
-    const friend = friendsList.find((f) => f.id === id);
-    return friend ? friend.name.charAt(0).toUpperCase() : '?';
-  };
-
   const getMemberAvatarColor = (id: string) => {
     if (id === currentUser.id) return currentUser.avatarColor;
     const friend = friendsList.find((f) => f.id === id);
     return friend ? friend.avatarColor : 'bg-gray-400';
+  };
+
+  const getMemberAvatarUrl = (id: string) => {
+    if (id === currentUser.id) return currentUser.avatarUrl;
+    const friend = friendsList.find((f) => f.id === id);
+    return friend ? friend.avatarUrl : undefined;
   };
 
   const payerName = getMemberName(paidBy);
@@ -85,15 +86,15 @@ export default function ExpenseCard({ expense, friendsList, currentUser, onEdit 
             <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Dividido entre:</span>
             <div className="flex -space-x-1.5 overflow-hidden">
               {splitAmong.map((memberId) => (
-                <div
+                <Avatar
                   key={memberId}
-                  title={getMemberName(memberId)}
-                  className={`w-6 h-6 rounded-full ${getMemberAvatarColor(
-                    memberId
-                  )} flex items-center justify-center text-[10px] font-bold text-white border-2 border-white ring-1 ring-gray-100`}
-                >
-                  {getMemberInitials(memberId)}
-                </div>
+                  name={getMemberName(memberId)}
+                  avatarColor={getMemberAvatarColor(memberId)}
+                  avatarUrl={getMemberAvatarUrl(memberId)}
+                  className="w-6 h-6"
+                  textClassName="text-[10px]"
+                  frameClassName="border-2 border-white ring-1 ring-gray-100"
+                />
               ))}
             </div>
           </div>

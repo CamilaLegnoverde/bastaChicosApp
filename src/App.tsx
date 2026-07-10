@@ -35,6 +35,8 @@ import {
 
 import { calculateBalances, calculateTransfers } from './utils/expenses';
 import { parseMeetingDate } from './utils/dates';
+import { resizeImageToDataUrl } from './utils/image';
+import { readInviteCodeFromUrl, stripInviteParamFromUrl } from './utils/invite';
 import { getRepository } from './api';
 
 import Logo from './components/ui/Logo';
@@ -54,6 +56,9 @@ import EditProfileModal, { EditProfileData } from './modals/EditProfileModal';
 import MemberExpensesModal from './modals/MemberExpensesModal';
 import CloseHangoutModal from './modals/CloseHangoutModal';
 import TransferDetailsModal from './modals/TransferDetailsModal';
+import InviteConfirmModal from './modals/InviteConfirmModal';
+
+const PENDING_INVITE_KEY = 'vaqui_pending_invite';
 
 type ActiveView = 'pin' | 'welcome' | 'home' | 'profile' | 'detail';
 
@@ -112,12 +117,20 @@ export default function App() {
   const [pendingName, setPendingName] = useState<string | null>(null);
   const [isAliasSubmitting, setIsAliasSubmitting] = useState(false);
 
+  // Usuarios existentes para el carrusel de la pantalla de ingreso
+  const [welcomeProfiles, setWelcomeProfiles] = useState<UserProfile[]>([]);
+
+  // Invitación por QR/link: código pendiente y perfil resuelto a confirmar
+  const [pendingInviteCode, setPendingInviteCode] = useState<string | null>(null);
+  const [inviteProfile, setInviteProfile] = useState<Friend | null>(null);
+
   // --- Modal Open States ---
   const [isNewHangoutOpen, setIsNewHangoutOpen] = useState(false);
   const [isEditHangoutOpen, setIsEditHangoutOpen] = useState(false);
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [isAddFriendOpen, setIsAddFriendOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isCloseHangoutConfirmOpen, setIsCloseHangoutConfirmOpen] = useState(false);
   const [selectedMemberBalance, setSelectedMemberBalance] = useState<MemberBalance | null>(null);
   const [selectedTransferDetails, setSelectedTransferDetails] = useState<Transfer | null>(null);
@@ -163,6 +176,73 @@ export default function App() {
       }
     })();
   }, []);
+
+  // --- Invitación por QR/link: captura el código al abrir la app ---
+  // Se guarda en sessionStorage para sobrevivir al PIN/login y a un refresh,
+  // y se limpia la URL para no re-disparar la invitación.
+  useEffect(() => {
+    const fromUrl = readInviteCodeFromUrl();
+    if (fromUrl) {
+      sessionStorage.setItem(PENDING_INVITE_KEY, fromUrl);
+      stripInviteParamFromUrl();
+    }
+    const stored = sessionStorage.getItem(PENDING_INVITE_KEY);
+    if (stored) setPendingInviteCode(stored);
+  }, []);
+
+  const clearPendingInvite = () => {
+    sessionStorage.removeItem(PENDING_INVITE_KEY);
+    setPendingInviteCode(null);
+  };
+
+  // Resuelve la invitación una vez que hay usuario autenticado
+  useEffect(() => {
+    if (!user || !pendingInviteCode) return;
+    const code = pendingInviteCode;
+
+    (async () => {
+      if (code === user.code) {
+        showToast('Ese es tu propio QR 😅');
+        clearPendingInvite();
+        return;
+      }
+      const alreadyFriend = friends.find((f) => f.code === code);
+      if (alreadyFriend) {
+        showToast(`${alreadyFriend.name} ya está en tu lista de amigos`);
+        clearPendingInvite();
+        return;
+      }
+      try {
+        const profile = await repo.findProfileByCode(code);
+        if (!profile) {
+          showToast('El QR no corresponde a ningún usuario');
+          clearPendingInvite();
+          return;
+        }
+        // Abre el modal de confirmación. Limpiamos el código pendiente para
+        // no re-resolver; el alta real ocurre al confirmar en el modal.
+        setInviteProfile({ ...profile, avatarColor: migrateAvatarColor(profile.avatarColor) });
+        clearPendingInvite();
+      } catch (err) {
+        console.error('[vaqui] Error al resolver la invitación:', err);
+        showToast('⚠️ No se pudo procesar la invitación. Revisá la conexión.');
+        clearPendingInvite();
+      }
+    })();
+  }, [user, pendingInviteCode, friends]);
+
+  // --- Carrusel de ingreso: carga los usuarios existentes ---
+  useEffect(() => {
+    if (activeView !== 'welcome' || user) return;
+    repo
+      .getAllProfiles()
+      .then((list) =>
+        setWelcomeProfiles(
+          list.map((p) => ({ ...p, avatarColor: migrateAvatarColor(p.avatarColor) }))
+        )
+      )
+      .catch((err) => console.error('[vaqui] Error al cargar perfiles de ingreso:', err));
+  }, [activeView, user]);
 
   // --- Directorio de personas: amigos + integrantes no-amigos ---
   // Permite mostrar el nombre real de cualquier integrante de una juntada.
@@ -258,6 +338,17 @@ export default function App() {
     );
     setHangouts(hangoutList.map(migrateHangout));
     setActiveView('home');
+  };
+
+  /** Tap en un usuario del carrusel: entra directo con ese perfil. */
+  const handleSelectExistingUser = async (profile: UserProfile) => {
+    try {
+      await enterAsUser(profile);
+      showToast(`¡Hola de nuevo, ${profile.name}!`);
+    } catch (err) {
+      console.error('[vaqui] Error al ingresar con el perfil:', err);
+      showToast('⚠️ No se pudo ingresar. Revisá la conexión.');
+    }
   };
 
   const handleWelcomeSubmit = async (name: string) => {
@@ -421,6 +512,23 @@ export default function App() {
     showToast('Perfil actualizado');
   };
 
+  /** Sube una nueva foto de perfil: reduce la imagen y la guarda como blob. */
+  const handlePickAvatar = async (file: File) => {
+    if (!user) return;
+    setIsUploadingAvatar(true);
+    try {
+      const dataUrl = await resizeImageToDataUrl(file);
+      const savedUrl = await repo.updateAvatar(user.id, dataUrl);
+      setUser({ ...user, avatarUrl: savedUrl });
+      showToast('Foto de perfil actualizada 📸');
+    } catch (err) {
+      console.error('[vaqui] Error al subir la foto:', err);
+      showToast('⚠️ No se pudo subir la foto. Probá con otra imagen.');
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
   const handleAddFriend = async (code: string) => {
     if (!user) return;
     const normalized = code.trim().toUpperCase();
@@ -454,6 +562,23 @@ export default function App() {
     } catch (err) {
       console.error('[vaqui] Error al agregar amigo:', err);
       showToast('⚠️ No se pudo agregar el amigo. Revisá la conexión.');
+    }
+  };
+
+  /** Confirma la invitación por QR: agrega al invitador como amigo. */
+  const handleConfirmInvite = async () => {
+    if (!user || !inviteProfile) return;
+    try {
+      await repo.addFriend(user.id, inviteProfile);
+      setFriends((prev) =>
+        prev.some((f) => f.id === inviteProfile.id) ? prev : [...prev, inviteProfile]
+      );
+      showToast(`¡Agregaste a ${inviteProfile.name}!`);
+    } catch (err) {
+      console.error('[vaqui] Error al agregar amigo desde la invitación:', err);
+      showToast('⚠️ No se pudo agregar el amigo. Revisá la conexión.');
+    } finally {
+      setInviteProfile(null);
     }
   };
 
@@ -673,7 +798,13 @@ export default function App() {
           <PinView onSuccess={() => setActiveView('welcome')} />
         )}
 
-        {!isLoading && activeView === 'welcome' && <WelcomeView onSubmit={handleWelcomeSubmit} />}
+        {!isLoading && activeView === 'welcome' && (
+          <WelcomeView
+            profiles={welcomeProfiles}
+            onSelectExisting={handleSelectExistingUser}
+            onSubmit={handleWelcomeSubmit}
+          />
+        )}
 
         {!isLoading && activeView === 'home' && user && (
           <HomeView
@@ -752,6 +883,8 @@ export default function App() {
             onClose={() => setIsEditProfileOpen(false)}
             user={user}
             onSave={handleEditProfile}
+            onPickAvatar={handlePickAvatar}
+            isUploadingAvatar={isUploadingAvatar}
           />
         )}
 
@@ -759,6 +892,12 @@ export default function App() {
           isOpen={isAddFriendOpen}
           onClose={() => setIsAddFriendOpen(false)}
           onAddByCode={handleAddFriend}
+        />
+
+        <InviteConfirmModal
+          profile={inviteProfile}
+          onConfirm={handleConfirmInvite}
+          onClose={() => setInviteProfile(null)}
         />
 
         {currentHangout && user && (

@@ -11,7 +11,8 @@ export interface UserProfile {
   cvu?: string;
   code: string;
   qr: string; // Base64 or mock SVG
-  avatarColor: string; // Gradient class
+  avatarColor: string; // Color plano de fallback (ej: 'bg-violet-500')
+  avatarUrl?: string; // Foto de perfil lista para <img src> (data URL derivado del blob)
 }
 
 export interface Friend {
@@ -22,6 +23,7 @@ export interface Friend {
   cvu?: string;
   code: string;
   avatarColor: string;
+  avatarUrl?: string; // Foto de perfil lista para <img src> (data URL derivado del blob)
 }
 
 export type HangoutStatus = 'proxima' | 'finalizada';
@@ -66,6 +68,7 @@ export interface MemberBalance {
   id: string;
   name: string;
   avatarColor: string;
+  avatarUrl?: string;
   aliasMP: string;
   totalPaid: number;
   totalOwed: number;

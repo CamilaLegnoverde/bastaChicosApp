@@ -22,6 +22,7 @@ import {
   toFriendshipRow,
   settlementToRow,
 } from './contracts';
+import { dataUrlToParts, base64ToByteaHex, byteaToDataUrl } from '../utils/image';
 
 const SESSION_KEY = 'vaqui_user_id';
 
@@ -254,6 +255,27 @@ export class SupabaseRepository implements IVaquiRepository {
     const { data, error } = await this.db.from('profiles').select('*').in('id', ids);
     if (error) throw error;
     return ((data ?? []) as ProfileRow[]).map(profileRowToFriend);
+  }
+
+  async getAllProfiles(): Promise<UserProfile[]> {
+    const { data, error } = await this.db
+      .from('profiles')
+      .select('*')
+      .order('name', { ascending: true })
+      .limit(100);
+    if (error) throw error;
+    return ((data ?? []) as ProfileRow[]).map(profileRowToUser);
+  }
+
+  async updateAvatar(userId: string, dataUrl: string): Promise<string> {
+    const { mime, base64 } = dataUrlToParts(dataUrl);
+    const { error } = await this.db
+      .from('profiles')
+      .update({ avatar_blob: base64ToByteaHex(base64), avatar_mime: mime })
+      .eq('id', userId);
+    if (error) throw error;
+    // Devolvemos el mismo data URL (equivale a lo que reconstruye byteaToDataUrl)
+    return byteaToDataUrl(base64ToByteaHex(base64), mime) ?? dataUrl;
   }
 
   /** Reemplaza la división completa de un gasto. */

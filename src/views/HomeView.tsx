@@ -36,6 +36,7 @@ export default function HomeView({
         onAvatarClick={onOpenProfile}
         avatarColor={user.avatarColor}
         avatarName={user.name}
+        avatarUrl={user.avatarUrl}
       />
 
       {/* List of Juntadas */}

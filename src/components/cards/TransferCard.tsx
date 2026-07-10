@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { ArrowRight, ReceiptText } from 'lucide-react';
+import Avatar from '../ui/Avatar';
 
 interface TransferCardProps {
   key?: any;
@@ -13,6 +14,8 @@ interface TransferCardProps {
   amount: number;
   fromAvatarColor: string;
   toAvatarColor: string;
+  fromAvatarUrl?: string;
+  toAvatarUrl?: string;
   onShowPaymentDetails: () => void;
 }
 
@@ -22,11 +25,10 @@ export default function TransferCard({
   amount,
   fromAvatarColor,
   toAvatarColor,
+  fromAvatarUrl,
+  toAvatarUrl,
   onShowPaymentDetails,
 }: TransferCardProps) {
-  const fromInitial = fromName ? fromName.charAt(0).toUpperCase() : '?';
-  const toInitial = toName ? toName.charAt(0).toUpperCase() : '?';
-
   return (
     <div
       className="bg-white rounded-2xl p-4 border border-gray-100 shadow-3xs hover:shadow-xs transition-shadow flex flex-col gap-3"
@@ -36,12 +38,14 @@ export default function TransferCard({
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
         {/* Deudor */}
         <div className="flex items-center gap-2 min-w-0">
-          <div
-            title={fromName}
-            className={`w-9 h-9 rounded-full ${fromAvatarColor} flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-3xs border-2 border-white`}
-          >
-            {fromInitial}
-          </div>
+          <Avatar
+            name={fromName}
+            avatarColor={fromAvatarColor}
+            avatarUrl={fromAvatarUrl}
+            className="w-9 h-9"
+            textClassName="text-xs"
+            frameClassName="shadow-3xs border-2 border-white"
+          />
           <div className="min-w-0">
             <span className="block text-[10px] text-gray-400 font-bold uppercase tracking-wider">
               Paga
@@ -63,12 +67,14 @@ export default function TransferCard({
             </span>
             <span className="block font-semibold text-gray-700 text-sm truncate">{toName}</span>
           </div>
-          <div
-            title={toName}
-            className={`w-9 h-9 rounded-full ${toAvatarColor} flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-3xs border-2 border-white`}
-          >
-            {toInitial}
-          </div>
+          <Avatar
+            name={toName}
+            avatarColor={toAvatarColor}
+            avatarUrl={toAvatarUrl}
+            className="w-9 h-9"
+            textClassName="text-xs"
+            frameClassName="shadow-3xs border-2 border-white"
+          />
         </div>
       </div>
 

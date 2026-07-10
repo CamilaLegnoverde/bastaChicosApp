@@ -217,6 +217,8 @@ export default function HangoutDetailView({
                       amount={trans.amount}
                       fromAvatarColor={fromMember?.avatarColor || 'bg-gray-400'}
                       toAvatarColor={toMember?.avatarColor || 'bg-gray-400'}
+                      fromAvatarUrl={fromMember?.avatarUrl}
+                      toAvatarUrl={toMember?.avatarUrl}
                       onShowPaymentDetails={() => onSelectTransfer(trans)}
                     />
                   );

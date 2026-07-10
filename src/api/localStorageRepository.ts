@@ -130,6 +130,33 @@ export class LocalStorageRepository implements IVaquiRepository {
     );
   }
 
+  async getAllProfiles(): Promise<UserProfile[]> {
+    const result: UserProfile[] = [];
+    const user = read<UserProfile | null>(USER_KEY, null);
+    if (user) result.push(user);
+    const friends = read<Friend[]>(FRIENDS_KEY, []);
+    for (const f of friends) {
+      result.push({ ...f, qr: f.code });
+    }
+    return result.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  async updateAvatar(userId: string, dataUrl: string): Promise<string> {
+    const user = read<UserProfile | null>(USER_KEY, null);
+    if (user && user.id === userId) {
+      write(USER_KEY, { ...user, avatarUrl: dataUrl });
+    }
+    // También lo reflejamos si el id corresponde a un amigo guardado
+    const friends = read<Friend[]>(FRIENDS_KEY, []);
+    if (friends.some((f) => f.id === userId)) {
+      write(
+        FRIENDS_KEY,
+        friends.map((f) => (f.id === userId ? { ...f, avatarUrl: dataUrl } : f))
+      );
+    }
+    return dataUrl;
+  }
+
   async getProfilesByIds(ids: string[]): Promise<Friend[]> {
     const wanted = new Set(ids);
     const friends = read<Friend[]>(FRIENDS_KEY, []);
@@ -146,6 +173,7 @@ export class LocalStorageRepository implements IVaquiRepository {
         cvu: user.cvu,
         code: user.code,
         avatarColor: user.avatarColor,
+        avatarUrl: user.avatarUrl,
       });
     }
     return result;

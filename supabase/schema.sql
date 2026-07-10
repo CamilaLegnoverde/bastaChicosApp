@@ -22,6 +22,8 @@ create table if not exists profiles (
   cvu          text,
   code         text not null unique,
   avatar_color text not null default 'bg-violet-500',
+  avatar_blob  bytea,        -- foto de perfil como blob (opcional)
+  avatar_mime  text,         -- tipo MIME de la foto (ej: 'image/jpeg')
   created_at   timestamptz not null default now()
 );
 

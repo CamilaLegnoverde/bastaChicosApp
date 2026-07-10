@@ -11,6 +11,7 @@
  */
 
 import { UserProfile, Friend, Hangout, Expense, Settlement } from '../types';
+import { byteaToDataUrl } from '../utils/image';
 
 // ============================================================
 // Interfaz del repositorio (contrato que consume la UI)
@@ -69,6 +70,18 @@ export interface IVaquiRepository {
   getProfilesByIds(ids: string[]): Promise<Friend[]>;
 
   /**
+   * Todos los perfiles registrados (para el carrusel de ingreso).
+   * Ordenados por nombre. Puede limitarse para no traer demasiados.
+   */
+  getAllProfiles(): Promise<UserProfile[]>;
+
+  /**
+   * Guarda la foto de perfil (blob) de un usuario y devuelve el data URL
+   * listo para mostrar. `dataUrl` es un JPEG ya reducido en el cliente.
+   */
+  updateAvatar(userId: string, dataUrl: string): Promise<string>;
+
+  /**
    * Suscripción en tiempo real a los gastos de una juntada (INSERT/UPDATE).
    * Devuelve una función para desuscribirse. En backends sin websockets
    * (localStorage) es un no-op.
@@ -88,6 +101,9 @@ export interface ProfileRow {
   cvu: string | null;
   code: string;
   avatar_color: string;
+  // Foto de perfil como blob. PostgREST devuelve bytea como texto hex ('\x...').
+  avatar_blob?: string | null;
+  avatar_mime?: string | null;
 }
 
 /**
@@ -165,6 +181,7 @@ export function profileRowToUser(row: ProfileRow): UserProfile {
     code: row.code,
     qr: row.code,
     avatarColor: row.avatar_color,
+    avatarUrl: byteaToDataUrl(row.avatar_blob, row.avatar_mime),
   };
 }
 
@@ -177,6 +194,7 @@ export function profileRowToFriend(row: ProfileRow): Friend {
     cvu: row.cvu ?? undefined,
     code: row.code,
     avatarColor: row.avatar_color,
+    avatarUrl: byteaToDataUrl(row.avatar_blob, row.avatar_mime),
   };
 }
 

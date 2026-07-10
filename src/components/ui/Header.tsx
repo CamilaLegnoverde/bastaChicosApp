@@ -4,6 +4,7 @@
  */
 
 import { ArrowLeft } from 'lucide-react';
+import Avatar from './Avatar';
 
 interface HeaderProps {
   title: string;
@@ -11,6 +12,7 @@ interface HeaderProps {
   onAvatarClick?: () => void;
   avatarColor?: string;
   avatarName?: string;
+  avatarUrl?: string;
 }
 
 export default function Header({
@@ -19,9 +21,8 @@ export default function Header({
   onAvatarClick,
   avatarColor = 'bg-brand-primary',
   avatarName = 'Usuario',
+  avatarUrl,
 }: HeaderProps) {
-  const initial = avatarName ? avatarName.charAt(0).toUpperCase() : '?';
-
   return (
     <header
       className="sticky top-0 z-40 bg-brand-cream/80 backdrop-blur-md border-b border-gray-100 px-4 py-4 flex items-center justify-between"
@@ -54,11 +55,14 @@ export default function Header({
           aria-label="Ver Perfil"
           id="header-avatar-btn"
         >
-          <div
-            className={`w-10 h-10 rounded-full ${avatarColor} flex items-center justify-center text-white font-bold text-base shadow-sm group-hover:shadow-md transition-all border-2 border-white`}
-          >
-            {initial}
-          </div>
+          <Avatar
+            name={avatarName}
+            avatarColor={avatarColor}
+            avatarUrl={avatarUrl}
+            className="w-10 h-10"
+            textClassName="text-base"
+            frameClassName="border-2 border-white shadow-sm group-hover:shadow-md transition-all"
+          />
         </button>
       )}
     </header>

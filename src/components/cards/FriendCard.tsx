@@ -6,6 +6,7 @@
 import React from 'react';
 import { Friend } from '../../types';
 import { Check } from 'lucide-react';
+import Avatar from '../ui/Avatar';
 
 interface FriendCardProps {
   key?: any;
@@ -21,8 +22,7 @@ export default function FriendCard({
   onSelect,
   showSelection = false,
 }: FriendCardProps) {
-  const { name, aliasMP, code, avatarColor } = friend;
-  const initial = name ? name.charAt(0).toUpperCase() : '?';
+  const { name, aliasMP, code, avatarColor, avatarUrl } = friend;
 
   return (
     <div
@@ -38,11 +38,13 @@ export default function FriendCard({
     >
       <div className="flex items-center gap-3 min-w-0">
         {/* Avatar badge */}
-        <div
-          className={`w-10 h-10 rounded-full ${avatarColor} flex items-center justify-center text-white font-bold text-sm shrink-0 border-2 border-white shadow-3xs`}
-        >
-          {initial}
-        </div>
+        <Avatar
+          name={name}
+          avatarColor={avatarColor}
+          avatarUrl={avatarUrl}
+          className="w-10 h-10"
+          frameClassName="border-2 border-white shadow-3xs"
+        />
 
         <div className="min-w-0">
           <h4 className="font-bold text-gray-800 text-sm sm:text-base leading-none truncate">

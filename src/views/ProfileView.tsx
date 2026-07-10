@@ -6,6 +6,7 @@
 import { Edit, Copy, UserPlus } from 'lucide-react';
 import { UserProfile, Friend } from '../types';
 import Header from '../components/ui/Header';
+import Avatar from '../components/ui/Avatar';
 import QRCard from '../components/cards/QRCard';
 import FriendCard from '../components/cards/FriendCard';
 
@@ -34,9 +35,14 @@ export default function ProfileView({
         {/* Profile Card Summary */}
         <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-xs flex flex-col items-center text-center relative overflow-hidden" id="profile-summary-box">
           {/* Avatar circle */}
-          <div className={`w-20 h-20 rounded-full ${user.avatarColor} flex items-center justify-center text-white text-3xl font-extrabold border-4 border-white shadow-md mb-3`}>
-            {user.name.charAt(0).toUpperCase()}
-          </div>
+          <Avatar
+            name={user.name}
+            avatarColor={user.avatarColor}
+            avatarUrl={user.avatarUrl}
+            className="w-20 h-20 mb-3"
+            textClassName="text-3xl font-extrabold"
+            frameClassName="border-4 border-white shadow-md"
+          />
 
           <h2 className="font-display font-extrabold text-2xl text-gray-800" id="profile-user-name">
             {user.name}
@@ -91,7 +97,7 @@ export default function ProfileView({
         </div>
 
         {/* QR and Invitation Code */}
-        <QRCard code={user.code} name={user.name} />
+        <QRCard code={user.code} name={user.name} onCopyText={onCopyText} />
 
         {/* Friends Section */}
         <div className="flex flex-col gap-3">

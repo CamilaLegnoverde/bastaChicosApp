@@ -51,17 +51,20 @@ export function calculateBalances(
   return memberIds.map((id) => {
     let name = 'Integrante';
     let avatarColor = 'bg-gray-400';
+    let avatarUrl: string | undefined;
     let aliasMP = '';
 
     if (id === currentUser.id) {
       name = `${currentUser.name} (Vos)`;
       avatarColor = currentUser.avatarColor;
+      avatarUrl = currentUser.avatarUrl;
       aliasMP = currentUser.aliasMP;
     } else {
       const friend = friendsList.find((f) => f.id === id);
       if (friend) {
         name = friend.name;
         avatarColor = friend.avatarColor;
+        avatarUrl = friend.avatarUrl;
         aliasMP = friend.aliasMP;
       }
     }
@@ -81,6 +84,7 @@ export function calculateBalances(
       id,
       name,
       avatarColor,
+      avatarUrl,
       aliasMP,
       totalPaid: Math.round(totals.totalPaid * 100) / 100,
       totalOwed: Math.round(totals.totalOwed * 100) / 100,

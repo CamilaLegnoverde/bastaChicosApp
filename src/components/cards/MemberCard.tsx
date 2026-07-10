@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { MemberBalance } from '../../types';
+import Avatar from '../ui/Avatar';
 
 interface MemberCardProps {
   key?: any;
@@ -13,9 +14,7 @@ interface MemberCardProps {
 }
 
 export default function MemberCard({ memberBalance, onClick }: MemberCardProps) {
-  const { name, avatarColor, totalPaid, totalOwed, balance } = memberBalance;
-
-  const initial = name ? name.charAt(0).toUpperCase() : '?';
+  const { name, avatarColor, avatarUrl, totalPaid, totalOwed, balance } = memberBalance;
 
   const isOwed = balance > 0.01;
   const owes = balance < -0.01;
@@ -29,11 +28,13 @@ export default function MemberCard({ memberBalance, onClick }: MemberCardProps) 
     >
       <div className="flex items-center gap-3 min-w-0">
         {/* Rounded Avatar Circle */}
-        <div
-          className={`w-10 h-10 rounded-full ${avatarColor} flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-3xs border-2 border-white`}
-        >
-          {initial}
-        </div>
+        <Avatar
+          name={name}
+          avatarColor={avatarColor}
+          avatarUrl={avatarUrl}
+          className="w-10 h-10"
+          frameClassName="border-2 border-white shadow-3xs"
+        />
         <div className="min-w-0">
           <h4 className="font-bold text-gray-800 text-sm sm:text-base leading-snug group-hover:text-brand-primary transition-colors truncate">
             {name}
