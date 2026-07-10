@@ -29,7 +29,7 @@ const SESSION_KEY = 'vaqui_user_id';
 const HANGOUT_SELECT = `
   id, emoji, title, date, description, status, created_by,
   hangout_members ( profile_id ),
-  expenses ( id, hangout_id, emoji, description, amount, paid_by, date,
+  expenses ( id, hangout_id, emoji, description, amount, paid_by, created_at,
     expense_splits ( profile_id )
   ),
   settlements ( id, hangout_id, from_id, to_id, amount )
@@ -236,7 +236,6 @@ export class SupabaseRepository implements IVaquiRepository {
         description: row.description,
         amount: row.amount,
         paid_by: row.paid_by,
-        date: row.date,
       })
       .eq('id', expense.id);
     if (error) throw error;

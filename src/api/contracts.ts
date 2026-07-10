@@ -142,7 +142,8 @@ export interface ExpenseRow {
   description: string;
   amount: number;
   paid_by: string;
-  date: string;
+  // Lo setea la base (default now()). Presente al leer; no se envía al escribir.
+  created_at: string;
 }
 
 export interface ExpenseSplitRow {
@@ -223,7 +224,11 @@ export function hangoutToRow(hangout: Hangout): HangoutRow & { created_by: strin
   };
 }
 
-export function expenseToRow(hangoutId: string, expense: Expense): ExpenseRow {
+// created_at lo maneja la base (default now()), por eso no se envía al insertar.
+export function expenseToRow(
+  hangoutId: string,
+  expense: Expense
+): Omit<ExpenseRow, 'created_at'> {
   return {
     id: expense.id,
     hangout_id: hangoutId,
@@ -231,7 +236,6 @@ export function expenseToRow(hangoutId: string, expense: Expense): ExpenseRow {
     description: expense.description,
     amount: expense.amount,
     paid_by: expense.paidBy,
-    date: expense.date,
   };
 }
 
@@ -261,7 +265,7 @@ export function hangoutWithRelationsToDomain(row: HangoutWithRelationsRow): Hang
       amount: Number(e.amount),
       paidBy: e.paid_by,
       splitAmong: e.expense_splits.map((s) => s.profile_id),
-      date: e.date,
+      createdAt: e.created_at,
     })),
     settlements: (row.settlements ?? []).map((s) => ({
       id: s.id,

@@ -64,6 +64,31 @@ export function formatFriendlyDate(dateStr: string): string {
   return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }
 
+/**
+ * Muestra hace cuánto se creó algo, a partir de un timestamp ISO (created_at):
+ * - menos de 1 minuto → 'Hace unos instantes'
+ * - menos de 60 minutos → 'Hace {x} min.'
+ * - más de 60 minutos → fecha y hora (ej: '10/07/2026 14:30')
+ */
+export function formatRelativeTime(isoTimestamp: string): string {
+  if (!isoTimestamp) return '';
+  const created = new Date(isoTimestamp);
+  if (isNaN(created.getTime())) return '';
+
+  const diffMin = Math.floor((Date.now() - created.getTime()) / 60000);
+
+  if (diffMin < 1) return 'Hace unos instantes';
+  if (diffMin < 60) return `Hace ${diffMin} min.`;
+
+  return new Intl.DateTimeFormat('es-AR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(created);
+}
+
 /** Timestamp para ordenar juntadas cronológicamente. */
 export function parseMeetingDate(dateStr: string): number {
   if (!dateStr) return 0;

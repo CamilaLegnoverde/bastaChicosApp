@@ -6,7 +6,7 @@
 import React from 'react';
 import { Expense, Friend, UserProfile } from '../../types';
 import { Calendar, Pencil } from 'lucide-react';
-import { formatFriendlyDate } from '../../utils/dates';
+import { formatRelativeTime } from '../../utils/dates';
 import Avatar from '../ui/Avatar';
 
 interface ExpenseCardProps {
@@ -19,7 +19,7 @@ interface ExpenseCardProps {
 }
 
 export default function ExpenseCard({ expense, friendsList, currentUser, onEdit }: ExpenseCardProps) {
-  const { emoji, description, amount, paidBy, splitAmong, date } = expense;
+  const { emoji, description, amount, paidBy, splitAmong, createdAt } = expense;
 
   // Resolve payer name
   const getMemberName = (id: string) => {
@@ -102,7 +102,7 @@ export default function ExpenseCard({ expense, friendsList, currentUser, onEdit 
           {/* Date */}
           <span className="text-[10px] text-gray-400 flex items-center gap-1">
             <Calendar size={10} />
-            {formatFriendlyDate(date)}
+            {formatRelativeTime(createdAt)}
           </span>
         </div>
       </div>

@@ -35,7 +35,7 @@ export interface Expense {
   amount: number;
   paidBy: string; // ID of the member who paid
   splitAmong: string[]; // List of member IDs this expense is split between
-  date: string;
+  createdAt: string; // Timestamp ISO de creación (para mostrar el "hace cuánto")
 }
 
 /** Transferencia marcada como realizada (pago registrado). */

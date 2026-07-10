@@ -614,7 +614,9 @@ export default function App() {
       amount,
       paidBy: data.payerId,
       splitAmong,
-      date: 'Hace unos instantes',
+      // Optimista: la base fija su propio created_at; el refresh en tiempo
+      // real trae el valor autoritativo. Acá usamos el reloj del cliente.
+      createdAt: new Date().toISOString(),
     };
 
     setHangouts((prev) =>

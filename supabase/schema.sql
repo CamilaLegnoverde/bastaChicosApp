@@ -66,7 +66,6 @@ create table if not exists expenses (
   description text not null,
   amount      numeric(12, 2) not null check (amount > 0),
   paid_by     text not null references profiles (id),
-  date        text not null default '', -- etiqueta de fecha para mostrar
   created_at  timestamptz not null default now()
 );
 
