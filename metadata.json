@@ -1,0 +1,6 @@
+{
+  "name": "Basta chicos",
+  "description": "Organizador de juntadas y división de gastos compartidos de forma simple, visual y divertida entre amigos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
