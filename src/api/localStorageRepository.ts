@@ -83,6 +83,11 @@ export class LocalStorageRepository implements IVaquiRepository {
     return () => {};
   }
 
+  subscribeToHangouts(_userId: string, _onChange: () => void): () => void {
+    // Sin backend no hay websockets: no-op
+    return () => {};
+  }
+
   async createHangout(hangout: Hangout): Promise<void> {
     const hangouts = read<Hangout[]>(HANGOUTS_KEY, []);
     write(HANGOUTS_KEY, [hangout, ...hangouts]);

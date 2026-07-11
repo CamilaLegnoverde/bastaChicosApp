@@ -193,6 +193,39 @@ export class SupabaseRepository implements IVaquiRepository {
     };
   }
 
+  subscribeToHangouts(userId: string, onChange: () => void): () => void {
+    // Websocket de Supabase Realtime: escucha altas/ediciones de juntadas
+    // y cambios de integrantes. Requiere las tablas en la publicación
+    // supabase_realtime (ver supabase/migrations/004_realtime_hangouts.sql).
+    //
+    // Nota: no se puede filtrar "juntadas donde soy integrante" en el
+    // servidor (la membresía vive en otra tabla), así que se escucha todo
+    // y el refresco (getHangouts) trae sólo lo que corresponde al usuario.
+    // Los DELETE de hangout_members tampoco admiten filtro, por eso '*'.
+    const channel = this.db
+      .channel(`hangouts-${userId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'hangouts' },
+        onChange
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'hangouts' },
+        onChange
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'hangout_members' },
+        onChange
+      )
+      .subscribe();
+
+    return () => {
+      this.db.removeChannel(channel);
+    };
+  }
+
   async createHangout(hangout: Hangout): Promise<void> {
     const { error } = await this.db.from('hangouts').insert(hangoutToRow(hangout));
     if (error) throw error;

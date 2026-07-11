@@ -87,6 +87,14 @@ export interface IVaquiRepository {
    * (localStorage) es un no-op.
    */
   subscribeToExpenses(hangoutId: string, onChange: () => void): () => void;
+
+  /**
+   * Suscripción en tiempo real a las juntadas (creación/edición de hangouts
+   * y cambios de integrantes). Refresca la pantalla de reuniones en todos
+   * los clientes. Devuelve una función para desuscribirse. En backends sin
+   * websockets (localStorage) es un no-op.
+   */
+  subscribeToHangouts(userId: string, onChange: () => void): () => void;
 }
 
 // ============================================================

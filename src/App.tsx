@@ -322,6 +322,41 @@ export default function App() {
     };
   }, [selectedHangoutId, activeView]);
 
+  // --- Tiempo real: listado de juntadas (pantalla de reuniones) ---
+  // Se suscribe por websocket a altas/ediciones de juntadas y cambios de
+  // integrantes, y refresca el listado desde la API, así todos los usuarios
+  // ven las reuniones nuevas o actualizadas al instante. Queda activa toda
+  // la sesión para no perder eventos mientras se navega por otras pantallas.
+  useEffect(() => {
+    if (!user) return;
+
+    const userId = user.id;
+    let refreshTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const refresh = async () => {
+      try {
+        const fresh = await repo.getHangouts(userId);
+        setHangouts(fresh.map(migrateHangout));
+      } catch (err) {
+        console.error('[vaqui] Error al refrescar las juntadas:', err);
+      }
+    };
+
+    // Pequeño debounce: los integrantes se insertan justo después de la
+    // juntada, así el refresco trae todo completo en una sola pasada.
+    const onChange = () => {
+      clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(refresh, 350);
+    };
+
+    const unsubscribe = repo.subscribeToHangouts(userId, onChange);
+
+    return () => {
+      clearTimeout(refreshTimer);
+      unsubscribe();
+    };
+  }, [user]);
+
   // --- Handlers ---
 
   /** Fija la sesión de un perfil existente y carga sus datos. */
