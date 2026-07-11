@@ -144,13 +144,6 @@ export default function LuckyWheelModal({ isOpen, onClose, members }: LuckyWheel
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="🎡 Ruleta de la Suerte">
       <div className="flex flex-col items-center gap-6">
-        <p className="text-xs text-gray-500 text-center max-w-xs">
-          Las caras de los{' '}
-          <span className="font-bold text-gray-700">{n}</span> integrantes desfilan sin parar.
-          Tocá <span className="font-bold text-gray-700">Sortear</span> y se van frenando en el
-          elegido.
-        </p>
-
         {n === 0 ? (
           <div className="text-sm text-gray-400 py-10 text-center">
             No hay integrantes para sortear.
