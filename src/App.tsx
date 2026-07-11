@@ -57,6 +57,7 @@ import MemberExpensesModal from './modals/MemberExpensesModal';
 import CloseHangoutModal from './modals/CloseHangoutModal';
 import TransferDetailsModal from './modals/TransferDetailsModal';
 import InviteConfirmModal from './modals/InviteConfirmModal';
+import LuckyWheelModal from './modals/LuckyWheelModal';
 
 const PENDING_INVITE_KEY = 'vaqui_pending_invite';
 
@@ -132,6 +133,7 @@ export default function App() {
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isCloseHangoutConfirmOpen, setIsCloseHangoutConfirmOpen] = useState(false);
+  const [isLuckyWheelOpen, setIsLuckyWheelOpen] = useState(false);
   const [selectedMemberBalance, setSelectedMemberBalance] = useState<MemberBalance | null>(null);
   const [selectedTransferDetails, setSelectedTransferDetails] = useState<Transfer | null>(null);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
@@ -883,6 +885,7 @@ export default function App() {
             onRequestClose={() => setIsCloseHangoutConfirmOpen(true)}
             onSelectMember={setSelectedMemberBalance}
             onSelectTransfer={setSelectedTransferDetails}
+            onOpenWheel={() => setIsLuckyWheelOpen(true)}
           />
         )}
 
@@ -971,6 +974,12 @@ export default function App() {
           isOpen={isCloseHangoutConfirmOpen}
           onClose={() => setIsCloseHangoutConfirmOpen(false)}
           onConfirm={handleCloseHangout}
+        />
+
+        <LuckyWheelModal
+          isOpen={isLuckyWheelOpen}
+          onClose={() => setIsLuckyWheelOpen(false)}
+          members={currentBalances}
         />
 
         {selectedTransferDetails && user && (
