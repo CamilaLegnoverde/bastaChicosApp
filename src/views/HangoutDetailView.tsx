@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Plus, Users, Receipt, TrendingUp, X, Pencil, CheckCircle2 } from 'lucide-react';
+import { Plus, Users, Receipt, TrendingUp, X, Pencil, CheckCircle2, Sparkles } from 'lucide-react';
 import { motion } from 'motion/react';
 import { UserProfile, Friend, Hangout, Expense, MemberBalance, Transfer } from '../types';
 import Header from '../components/ui/Header';
@@ -26,6 +26,7 @@ interface HangoutDetailViewProps {
   onRequestClose: () => void;
   onSelectMember: (member: MemberBalance) => void;
   onSelectTransfer: (transfer: Transfer) => void;
+  onOpenWheel: () => void;
 }
 
 export default function HangoutDetailView({
@@ -42,6 +43,7 @@ export default function HangoutDetailView({
   onRequestClose,
   onSelectMember,
   onSelectTransfer,
+  onOpenWheel,
 }: HangoutDetailViewProps) {
   const isFinished = hangout.status === 'finalizada';
 
@@ -80,6 +82,16 @@ export default function HangoutDetailView({
             </button>
           </div>
         )}
+
+        {/* Ruleta de la Suerte: elige a alguien al azar entre los integrantes */}
+        <button
+          onClick={onOpenWheel}
+          className="w-full bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-display font-extrabold text-sm py-4 rounded-2xl shadow-xs transition-transform active:scale-98 cursor-pointer flex items-center justify-center gap-2 touch-target"
+          id="open-lucky-wheel-btn"
+        >
+          <Sparkles size={18} strokeWidth={2.5} />
+          <span>Ruleta de la Suerte</span>
+        </button>
 
         {/* SECTION: Gastos Timeline */}
         <div className="flex flex-col gap-3">
